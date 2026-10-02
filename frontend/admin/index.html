@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>CarePlus Hospital | Admin Dashboard</title>
+
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+
+        <div class="logo">
+            <span>+</span>
+            CarePlus
+        </div>
+
+        <p class="admin-title">ADMIN PANEL</p>
+
+        <nav>
+            <a href="index.html" class="active">📊 Dashboard</a>
+
+            <a href="#appointments">📅 Appointments</a>
+
+            <a href="#">👨‍⚕️ Doctors</a>
+
+            <a href="#">👤 Patients</a>
+
+            <a href="#">⚙️ Settings</a>
+        </nav>
+
+        <div class="logout">
+            <a href="../index.html">← Back to Website</a>
+        </div>
+
+    </aside>
+
+
+    <!-- MAIN CONTENT -->
+    <main class="main">
+
+        <!-- TOP BAR -->
+        <header class="topbar">
+
+            <div>
+                <h1>Dashboard</h1>
+                <p>Welcome to CarePlus Hospital Admin Panel</p>
+            </div>
+
+            <div class="admin-profile">
+                <div class="avatar">A</div>
+
+                <div>
+                    <strong>Administrator</strong>
+                    <small>Hospital Admin</small>
+                </div>
+            </div>
+
+        </header>
+
+
+        <!-- STAT CARDS -->
+        <section class="stats">
+
+            <div class="stat-card">
+                <div class="icon">📅</div>
+
+                <div>
+                    <p>Total Appointments</p>
+                    <h2 id="totalAppointments">0</h2>
+                </div>
+            </div>
+
+
+            <div class="stat-card">
+                <div class="icon">👨‍⚕️</div>
+
+                <div>
+                    <p>Total Doctors</p>
+                    <h2>12</h2>
+                </div>
+            </div>
+
+
+            <div class="stat-card">
+                <div class="icon">👤</div>
+
+                <div>
+                    <p>Total Patients</p>
+                    <h2 id="totalPatients">0</h2>
+                </div>
+            </div>
+
+
+            <div class="stat-card">
+                <div class="icon">🏥</div>
+
+                <div>
+                    <p>Departments</p>
+                    <h2>8</h2>
+                </div>
+            </div>
+
+        </section>
+
+
+        <!-- APPOINTMENTS -->
+        <section class="dashboard-card" id="appointments">
+
+            <div class="card-header">
+
+                <div>
+                    <h2>Recent Appointments</h2>
+                    <p>Latest patient appointment requests</p>
+                </div>
+
+                <button onclick="loadAppointments()">
+                    Refresh
+                </button>
+
+            </div>
+
+
+            <div class="table-container">
+
+                <table>
+
+                    <thead>
+
+                        <tr>
+                            <th>ID</th>
+                            <th>Patient</th>
+                            <th>Phone</th>
+                            <th>Department</th>
+                            <th>Date</th>
+                            <th>Time</th>
+                        </tr>
+
+                    </thead>
+
+
+                    <tbody id="appointmentTable">
+
+                        <tr>
+                            <td colspan="6">
+                                Loading appointments...
+                            </td>
+                        </tr>
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        </section>
+
+    </main>
+
+
+<script>
+
+async function loadAppointments() {
+
+    const table =
+        document.getElementById("appointmentTable");
+
+    const totalAppointments =
+        document.getElementById("totalAppointments");
+
+    const totalPatients =
+        document.getElementById("totalPatients");
+
+
+    try {
+
+        const response = await fetch(
+            "http://127.0.0.1:5000/api/appointments"
+        );
+
+
+        if (!response.ok) {
+
+            throw new Error(
+                "HTTP Error: " + response.status
+            );
+
+        }
+
+
+        const result =
+            await response.json();
+
+
+        console.log("API DATA:", result);
+
+
+        const appointments =
+            result.appointments || [];
+
+
+        // TOTAL APPOINTMENTS
+        totalAppointments.textContent =
+            appointments.length;
+
+
+        // TOTAL UNIQUE PATIENTS
+        const patientNames =
+            new Set(
+                appointments.map(
+                    a => a.patient_name
+                )
+            );
+
+
+        totalPatients.textContent =
+            patientNames.size;
+
+
+        // TABLE
+        if (appointments.length === 0) {
+
+            table.innerHTML = `
+                <tr>
+                    <td colspan="6">
+                        No appointments found
+                    </td>
+                </tr>
+            `;
+
+            return;
+        }
+
+
+        table.innerHTML =
+            appointments.map(a => `
+
+                <tr>
+
+                    <td>${a.id || "-"}</td>
+
+                    <td>${a.patient_name || "-"}</td>
+
+                    <td>${a.phone || "-"}</td>
+
+                    <td>${a.department || "-"}</td>
+
+                    <td>${a.appointment_date || "-"}</td>
+
+                    <td>${a.appointment_time || "-"}</td>
+
+                </tr>
+
+            `).join("");
+
+
+    } catch (error) {
+
+        console.error(
+            "APPOINTMENT ERROR:",
+            error
+        );
+
+
+        table.innerHTML = `
+            <tr>
+                <td colspan="6">
+                    Unable to load appointments
+                </td>
+            </tr>
+        `;
+
+    }
+
+}
+
+
+// PAGE LOAD
+document.addEventListener(
+    "DOMContentLoaded",
+    loadAppointments
+);
+
+</script>
+
+
+</body>
+</html>
